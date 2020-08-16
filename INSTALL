@@ -1,0 +1,6 @@
+Installing lsnar
+--------------------------------------------------------------------
+To build and install the program, issue the following commands:
+
+        make
+        sudo make install

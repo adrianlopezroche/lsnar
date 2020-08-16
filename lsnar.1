@@ -1,0 +1,35 @@
+.TH LSNAR 1
+.\" NAME should be all caps, SECTION should be 1-8, maybe w/ subsection
+.\" other parms are allowed: see man(7), man(1)
+.SH NAME
+lsnar \- list contents of GNU tar incremental snapshot files
+.SH SYNOPSIS
+.B lsnar
+[
+.I options
+]
+.I SNAPSHOT_FILE
+
+.SH "DESCRIPTION"
+List the contents of GNU tar incremental snapshot (snar) files.
+
+.SH OPTIONS
+.TP
+.B -s
+sort files and directories in alphabetical order
+.TP
+.B -H
+print only the snapshot file's header, omitting contents
+.TP
+.B -h
+displays help
+
+.SH NOTES
+Only version 2 of the incremental snapshot format is supported at this moment.
+Version 2 is used by GNU tar versions starting with 1.15.91. Unsupported
+versions include version 1 (used by 1.15.90), and version 0 (used by GNU tar
+versions up to and including 1.15.1).
+
+
+.SH AUTHOR
+Adrian Lopez <adrianlopezroche@gmail.com>
