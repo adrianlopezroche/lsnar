@@ -535,16 +535,16 @@ void print_help()
 {
 	printf("Usage: lsnar [options] SNAPSHOT_FILE\n\n");
 
-	printf(" -s           sort files and directories in alphabetical order\n");
-	printf(" -H           print only the snapshot file's header, omitting contents\n");
-	printf(" -t [TYPE]    print only directory records containing entries of one or\n");
-	printf("              more of the following TYPE values, concatenated together:\n");
-	printf("                  Y - entries contained in the archive\n");
-	printf("                  N - entries not contained in the archive\n");
-	printf("                  D - entries that are directories\n");
-	printf("                  0 - matches directory records containing no entries\n");
-	printf("              the default behavior is equivalent to -tYND0\n");
-	printf(" -h           displays this help message\n");
+	printf(" -s         sort files and directories in alphabetical order\n");
+	printf(" -H         print only the snapshot file's header, omitting contents\n");
+	printf(" -t TYPE    print only directory records containing entries of one or\n");
+	printf("            more of the following TYPE values, concatenated together:\n");
+	printf("                Y - entries contained in the archive\n");
+	printf("                N - entries not contained in the archive\n");
+	printf("                D - entries that are directories\n");
+	printf("                0 - matches directory records containing no entries\n");
+	printf("            the default behavior is equivalent to -tYND0\n");
+	printf(" -h         displays this help message\n");
 
 	printf("\n");
 }

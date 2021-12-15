@@ -7,16 +7,16 @@ Usage
 -----
 Usage: lsnar [options] SNAPSHOT_FILE
 
- -s           sort files and directories in alphabetical order
- -H           print only the snapshot file's header, omitting contents
- -t [TYPE]    print only directory records containing entries of one or
-              more of the following TYPE values, concatenated together:
-                  Y - entries contained in the archive
-                  N - entries not contained in the archive
-                  D - entries that are directories
-                  0 - matches directory records containing no entries
-              the default behavior is equivalent to -tYND0
- -h           displays this help message
+ -s         sort files and directories in alphabetical order
+ -H         print only the snapshot file's header, omitting contents
+ -t TYPE    print only directory records containing entries of one or
+            more of the following TYPE values, concatenated together:
+                Y - entries contained in the archive
+                N - entries not contained in the archive
+                D - entries that are directories
+                0 - matches directory records containing no entries
+            the default behavior is equivalent to -tYND0
+ -h         displays this help message
 
 
 Contact Information for the author
