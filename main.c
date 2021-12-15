@@ -424,6 +424,8 @@ int read_snar_version(FILE *file)
 		return -1;
 	}
 
+	tar_version[i] = '\0';
+
 	long long v;
 	if (read_longlong(file, &v))
 	{
