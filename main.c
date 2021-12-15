@@ -153,6 +153,10 @@ char *read_string(FILE *file)
 
 	s[i] = '\0';
 
+	char *smin = realloc(s, i+1);
+	if (smin != 0)
+		s = smin;
+
 	return s;
 }
 
@@ -454,6 +458,13 @@ void read_directory(struct snar_directory *d, FILE *file, const struct directory
 			else
 				dumpdir_file_free(&f);
 		} while (!peek_null(file) && !feof(file)); // more files?
+	}
+
+	struct dumpdir_file *fmin = realloc(d->files, sizeof(struct dumpdir_file) * d->num_files);
+	if (fmin != 0)
+	{
+		d->files = fmin;
+		d->alloc_files = d->num_files;
 	}
 
 	expect_null(file); // end of dirdump
