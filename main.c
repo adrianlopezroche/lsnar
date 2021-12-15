@@ -369,12 +369,17 @@ void print_snar(struct snar_file *sf, const struct directory_filter_flags *filte
 		print_directory(&sf->directories[d], filter_flags);
 }
 
+void dumpdir_file_free(struct dumpdir_file *file)
+{
+	free(file->filename);
+}
+
 void snar_directory_free(struct snar_directory *directory)
 {
 	free(directory->name);
 
 	for (size_t f = 0; f < directory->num_files; ++f)
-		free(directory->files[f].filename);
+		dumpdir_file_free(&directory->files[f]);
 
 	if (directory->files != 0)
 		free(directory->files);
@@ -446,6 +451,8 @@ void read_directory(struct snar_directory *d, FILE *file, const struct directory
 
 			if (match_control_code(f.control_code, filter_flags))
 				add_file(d, &f);
+			else
+				dumpdir_file_free(&f);
 		} while (!peek_null(file) && !feof(file)); // more files?
 	}
 
