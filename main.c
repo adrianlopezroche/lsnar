@@ -276,7 +276,7 @@ void print_file(struct dumpdir_file *file)
 	printf("    File: %c %s\n", file->control_code, file->filename);
 }
 
-void print_directory(struct snar_directory *dir, int print_files)
+void print_directory(struct snar_directory *dir)
 {
 	printf("%s\n\n", dir->name);
 	printf("     NFS: %s\n", dir->nfs ? "Yes" : "No");
@@ -288,16 +288,15 @@ void print_directory(struct snar_directory *dir, int print_files)
 	printf("     Dev: %lld\n", dir->dev);
 	printf("   Inode: %lld\n", dir->ino);
 
-	if (print_files)
-		for (size_t f = 0; f < dir->num_files; ++f)
-			print_file(&dir->files[f]);
+	for (size_t f = 0; f < dir->num_files; ++f)
+		print_file(&dir->files[f]);
 }
 
 void print_snar(struct snar_file *sf)
 {
 	for (size_t d = 0; d < sf->num_directories; ++d)
 	{
-		print_directory(&sf->directories[d], 1);
+		print_directory(&sf->directories[d]);
 		printf("\n");
 	}
 }
@@ -379,7 +378,7 @@ void read_directory(struct snar_directory *d, FILE *file, int immediate)
 	expect_null(file);
 
 	if (immediate)
-		print_directory(d, 0);
+		print_directory(d);
 
 	if (!peek_null(file))
 	{
