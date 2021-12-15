@@ -325,24 +325,15 @@ void snar_free(struct snar_file *sf)
 	free(sf);
 }
 
-void read_file(struct dumpdir_file *f, FILE *file, int immediate)
+void read_file(struct dumpdir_file *f, FILE *file)
 {
 	f->control_code = fgetc(file);
 	f->filename = read_string(file);
 
-	if (immediate)
-		print_file(f);
-
-	if (immediate)
-	{
-		free(f->filename);
-		f->filename = 0;
-	}
-
 	expect_null(file); // end of file listing
 }
 
-void read_directory(struct snar_directory *d, FILE *file, int immediate)
+void read_directory(struct snar_directory *d, FILE *file)
 {
 	d->files = 0;
 	d->num_files = 0;
@@ -377,27 +368,20 @@ void read_directory(struct snar_directory *d, FILE *file, int immediate)
 
 	expect_null(file);
 
-	if (immediate)
-		print_directory(d);
-
 	if (!peek_null(file))
 	{
 		do
 		{
 			struct dumpdir_file f;
 
-			read_file(&f, file, immediate);
+			read_file(&f, file);
 
-			if (!immediate)
-				add_file(d, &f);
+			add_file(d, &f);
 		} while (!peek_null(file) && !feof(file)); // more files?
 	}
 
 	expect_null(file); // end of dirdump
 	expect_null(file); // end of directory
-
-	if (immediate)
-		printf("\n");
 }
 
 int read_snar_version(FILE *file)
@@ -546,12 +530,18 @@ int main(int argc, char **argv)
 	{
 		struct snar_directory d;
 
-		read_directory(&d, file, !sort_option);
+		read_directory(&d, file);
 
 		if (sort_option)
+		{
 			add_directory(sf, &d);
+		}
 		else
-			free(d.name);
+		{
+			print_directory(&d);
+			printf("\n");
+			snar_directory_free(&d);
+		}
 	} while (!peek_null(file) && !feof(file)); // more directories?
 
 	g_cleanup.f = 0;
@@ -561,8 +551,9 @@ int main(int argc, char **argv)
 	{
 		sort_snar(sf);
 		print_snar(sf);
-		snar_free(sf);
 	}
+
+	snar_free(sf);
 
 	return 0;
 }
