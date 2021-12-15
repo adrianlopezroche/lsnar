@@ -530,6 +530,9 @@ int main(int argc, char **argv)
 		errx(1, "could not open file %s", argv[optind]);
 
 	struct snar_file *sf = malloc(sizeof(struct snar_file));
+	if (sf == 0)
+		errx(1, "out of memory");
+
 	g_cleanup.sf = sf;
 
 	read_snar(sf, file);
