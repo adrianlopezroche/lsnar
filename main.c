@@ -311,7 +311,7 @@ struct directory_filter_flags parse_directory_filter_flags(char *specifiers)
 				break;
 
 			default:
-				errx(1, "invalid argument '%c' for '-t'\nvalid arguments are f, d, Y, N, D, 0\n", specifiers[s]);
+				errx(1, "invalid argument '%c' for '-t'\nTry 'lsnar -h' for more information.", specifiers[s]);
 				break;
 		}
 	}
@@ -557,7 +557,7 @@ int main(int argc, char **argv)
 
 	int sort_option = 0;
 	int header_only_option = 0;
-	struct directory_filter_flags filter_flags = parse_directory_filter_flags("fd0");
+	struct directory_filter_flags filter_flags = parse_directory_filter_flags("YND0");
 
 	tzset();
 
