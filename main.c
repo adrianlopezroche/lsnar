@@ -302,20 +302,23 @@ void print_snar(struct snar_file *sf)
 	}
 }
 
+void snar_directory_free(struct snar_directory *directory)
+{
+	free(directory->name);
+
+	for (size_t f = 0; f < directory->num_files; ++f)
+		free(directory->files[f].filename);
+
+	if (directory->files != 0)
+		free(directory->files);
+}
+
 void snar_free(struct snar_file *sf)
 {
 	g_cleanup.sf = 0;
 
 	for (size_t d = 0; d < sf->num_directories; ++d)
-	{
-		free(sf->directories[d].name);
-
-		for (size_t f = 0; f < sf->directories[d].num_files; ++f)
-			free(sf->directories[d].files[f].filename);
-
-		if (sf->directories[d].files != 0)
-			free(sf->directories[d].files);
-	}
+		snar_directory_free(sf->directories+d);
 
 	if (sf->directories != 0)
 		free(sf->directories);
