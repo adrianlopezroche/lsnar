@@ -294,19 +294,6 @@ struct directory_filter_flags parse_directory_filter_flags(char *specifiers)
 	{
 		switch (specifiers[s])
 		{
-			case 'f':
-				result.control_code_Y = 1;
-				result.control_code_N = 1;
-				break;
-
-			case 'd':
-				result.control_code_D = 1;
-				break;
-
-			case '0':
-				result.empty = 1;
-				break;
-
 			case 'Y':
 				result.control_code_Y = 1;
 				break;
@@ -317,6 +304,10 @@ struct directory_filter_flags parse_directory_filter_flags(char *specifiers)
 
 			case 'D':
 				result.control_code_D = 1;
+				break;
+
+			case '0':
+				result.empty = 1;
 				break;
 
 			default:
@@ -548,13 +539,11 @@ void print_help()
 	printf(" -H           print only the snapshot file's header, omitting contents\n");
 	printf(" -t [TYPE]    print only directory records containing entries of one or\n");
 	printf("              more of the following TYPE values, concatenated together:\n");
-	printf("                  f - files\n");
-	printf("                  d - directories\n");
-	printf("                  Y - files, backed up\n");
-	printf("                  N - files, not backed up\n");
-	printf("                  D - directories (synonym for 'd')\n");
+	printf("                  Y - entries contained in the archive\n");
+	printf("                  N - entries not contained in the archive\n");
+	printf("                  D - entries that are directories\n");
 	printf("                  0 - matches directory records containing no entries\n");
-	printf("              the default behavior is equivalent to -tfd0\n");
+	printf("              the default behavior is equivalent to -tYND0\n");
 	printf(" -h           displays this help message\n");
 
 	printf("\n");

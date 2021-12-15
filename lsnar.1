@@ -25,14 +25,12 @@ print only the snapshot file's header, omitting contents
 print only directory records containing entries of one or more of the
 following TYPE values, concatenated together:
 
-    f - files
-    d - directories
-    Y - files, backed up
-    N - files, not backed up
-    D - directories (synonym for 'd')
+    Y - entries contained in the archive
+    N - entries not contained in the archive
+    D - entries that are directories
     0 - matches directory records containing no entries
 
-the default behavior is equivalent to -tfd0
+the default behavior is equivalent to -YND0
 .TP
 .B -h
 displays help
