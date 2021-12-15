@@ -62,6 +62,14 @@ struct snar_file
 	size_t alloc_directories;
 };
 
+struct directory_filter_flags
+{
+	char control_code_Y : 1;
+	char control_code_N : 1;
+	char control_code_D : 1;
+	char empty : 1;
+};
+
 int match_string(FILE *file, const char *text)
 {
 	int i = 0;
@@ -98,7 +106,7 @@ void expect_null(FILE *file)
 {
 	if (!peek_null(file))
 		errx(1, "input file contains invalid characters");
-	
+
 	fgetc(file);
 }
 
@@ -110,7 +118,7 @@ char *read_string(FILE *file)
 	char *s = malloc(to_allocate);
 	if (s == 0)
 		errx(1, "out of memory");
-	
+
 	allocated = to_allocate;
 
 	int i = 0;
@@ -236,9 +244,9 @@ void add_file(struct snar_directory *d, struct dumpdir_file *f)
 			errx(1, "out of memory");
 
 		d->files = new_files;
-		d->alloc_files = to_alloc;				
+		d->alloc_files = to_alloc;
 	}
-	
+
 	d->files[d->num_files++] = *f;
 }
 
@@ -271,13 +279,83 @@ void sort_snar(struct snar_file *sf)
 	qsort(sf->directories, sf->num_directories, sizeof(struct snar_directory), dircmp);
 }
 
+struct directory_filter_flags parse_directory_filter_flags(char *specifiers)
+{
+	struct directory_filter_flags result;
+
+	result.control_code_Y = 0;
+	result.control_code_N = 0;
+	result.control_code_D = 0;
+	result.empty = 0;
+
+	size_t length = strlen(specifiers);
+
+	for (int s = 0; s < length; ++s)
+	{
+		switch (specifiers[s])
+		{
+			case 'f':
+				result.control_code_Y = 1;
+				result.control_code_N = 1;
+				break;
+
+			case 'd':
+				result.control_code_D = 1;
+				break;
+
+			case '0':
+				result.empty = 1;
+				break;
+
+			case 'Y':
+				result.control_code_Y = 1;
+				break;
+
+			case 'N':
+				result.control_code_N = 1;
+				break;
+
+			case 'D':
+				result.control_code_D = 1;
+				break;
+
+			default:
+				errx(1, "invalid argument '%c' for '-t'\nvalid arguments are f, d, Y, N, D, 0\n", specifiers[s]);
+				break;
+		}
+	}
+
+	return result;
+}
+
+int match_control_code(char control_code, const struct directory_filter_flags *filter_flags)
+{
+	switch (control_code)
+	{
+		case 'Y':
+			return filter_flags->control_code_Y;
+
+		case 'N':
+			return filter_flags->control_code_N;
+
+		case 'D':
+			return filter_flags->control_code_D;
+
+		default:
+			return 0;
+	}
+}
+
 void print_file(struct dumpdir_file *file)
 {
 	printf("    File: %c %s\n", file->control_code, file->filename);
 }
 
-void print_directory(struct snar_directory *dir)
+void print_directory(struct snar_directory *dir, const struct directory_filter_flags *filter_flags)
 {
+	if (dir->num_files == 0 && !filter_flags->empty)
+		return;
+
 	printf("%s\n\n", dir->name);
 	printf("     NFS: %s\n", dir->nfs ? "Yes" : "No");
 
@@ -290,15 +368,14 @@ void print_directory(struct snar_directory *dir)
 
 	for (size_t f = 0; f < dir->num_files; ++f)
 		print_file(&dir->files[f]);
+
+	printf("\n");
 }
 
-void print_snar(struct snar_file *sf)
+void print_snar(struct snar_file *sf, const struct directory_filter_flags *filter_flags)
 {
 	for (size_t d = 0; d < sf->num_directories; ++d)
-	{
-		print_directory(&sf->directories[d]);
-		printf("\n");
-	}
+		print_directory(&sf->directories[d], filter_flags);
 }
 
 void snar_directory_free(struct snar_directory *directory)
@@ -333,7 +410,7 @@ void read_file(struct dumpdir_file *f, FILE *file)
 	expect_null(file); // end of file listing
 }
 
-void read_directory(struct snar_directory *d, FILE *file)
+void read_directory(struct snar_directory *d, FILE *file, const struct directory_filter_flags *filter_flags)
 {
 	d->files = 0;
 	d->num_files = 0;
@@ -376,7 +453,8 @@ void read_directory(struct snar_directory *d, FILE *file)
 
 			read_file(&f, file);
 
-			add_file(d, &f);
+			if (match_control_code(f.control_code, filter_flags))
+				add_file(d, &f);
 		} while (!peek_null(file) && !feof(file)); // more files?
 	}
 
@@ -457,7 +535,7 @@ void do_cleanup()
 {
 	if (g_cleanup.f != 0)
 		fclose(g_cleanup.f);
-	
+
 	if (g_cleanup.sf != 0)
 		snar_free(g_cleanup.sf);
 }
@@ -466,9 +544,18 @@ void print_help()
 {
 	printf("Usage: lsnar [options] SNAPSHOT_FILE\n\n");
 
-	printf(" -s    sort files and directories in alphabetical order\n");
-	printf(" -H    print only the snapshot file's header, omitting contents\n");
-	printf(" -h    displays this help message\n");
+	printf(" -s           sort files and directories in alphabetical order\n");
+	printf(" -H           print only the snapshot file's header, omitting contents\n");
+	printf(" -t [TYPE]    print only directory records containing entries of one or\n");
+	printf("              more of the following TYPE values, concatenated together:\n");
+	printf("                  f - files\n");
+	printf("                  d - directories\n");
+	printf("                  Y - files, backed up\n");
+	printf("                  N - files, not backed up\n");
+	printf("                  D - directories (synonym for 'd')\n");
+	printf("                  0 - matches directory records containing no entries\n");
+	printf("              the default behavior is equivalent to -tfd0\n");
+	printf(" -h           displays this help message\n");
 
 	printf("\n");
 }
@@ -481,11 +568,12 @@ int main(int argc, char **argv)
 
 	int sort_option = 0;
 	int header_only_option = 0;
+	struct directory_filter_flags filter_flags = parse_directory_filter_flags("fd0");
 
 	tzset();
 
 	int opt;
-	while ((opt = getopt(argc, argv, "sHh")) !=  -1)
+	while ((opt = getopt(argc, argv, "sHt:h")) !=  -1)
 	{
 		switch (opt)
 		{
@@ -494,6 +582,9 @@ int main(int argc, char **argv)
 				break;
 			case 'H':
 				header_only_option = 1;
+				break;
+			case 't':
+				filter_flags = parse_directory_filter_flags(optarg);
 				break;
 			case 'h':
 				print_help();
@@ -530,7 +621,7 @@ int main(int argc, char **argv)
 	{
 		struct snar_directory d;
 
-		read_directory(&d, file);
+		read_directory(&d, file, &filter_flags);
 
 		if (sort_option)
 		{
@@ -538,8 +629,7 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			print_directory(&d);
-			printf("\n");
+			print_directory(&d, &filter_flags);
 			snar_directory_free(&d);
 		}
 	} while (!peek_null(file) && !feof(file)); // more directories?
@@ -550,7 +640,7 @@ int main(int argc, char **argv)
 	if (sort_option)
 	{
 		sort_snar(sf);
-		print_snar(sf);
+		print_snar(sf, &filter_flags);
 	}
 
 	snar_free(sf);

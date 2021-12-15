@@ -21,6 +21,19 @@ sort files and directories in alphabetical order
 .B -H
 print only the snapshot file's header, omitting contents
 .TP
+.B -t
+print only directory records containing entries of one or more of the
+following TYPE values, concatenated together:
+
+    f - files
+    d - directories
+    Y - files, backed up
+    N - files, not backed up
+    D - directories (synonym for 'd')
+    0 - matches directory records containing no entries
+
+the default behavior is equivalent to -tfd0
+.TP
 .B -h
 displays help
 
